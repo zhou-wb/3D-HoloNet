@@ -7,3 +7,9 @@
 ```
 python train.py
 ```
+
+## Inference
+
+```
+python inference.py
+```

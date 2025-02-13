@@ -2,7 +2,7 @@ import prop_ideal
 import torch
 import torch.nn as nn
 from load_flying3d import FlyingThings3D_loader
-from load_hypersim import hypersim_TargetLoader
+# from load_hypersim import hypersim_TargetLoader
 from image_loader import TargetLoader
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -61,7 +61,7 @@ backward_ASM = prop_ideal.SerialProp(backward_prop_dist, wavelength, feature_siz
 cnnpropcnn = load_CNNpropCNN().to(device)
 # summary(cnnpropcnn, (8, 1080, 1920))
 holo_path = {}
-holo_path['frame_1_with_tv'] = '3D-HoloNet_model/runs/2024-09-19-18-21-31.944859-FlyingThings3Dg-unetasmunet-0.0001-CNNpropCNN-1080_1920-880_1600-8_target_planes-in-focus-loss/model/FlyingThings3Dg-unetasmunet-0.0001-CNNpropCNN-1080_1920-880_1600-8_target_planes-in-focus-loss_epoch_60.pth'
+holo_path['frame_1_with_tv'] = '3D-HoloNet_model.pth'
 
 def cond_loader(data_name, channel, image_res, roi_res, virtual_depth_planes):
     random_seed = None #random_seed = None for not shuffle
@@ -160,11 +160,11 @@ def cond_mkdir(output_path, sub_path):
 
 num_iters = 1000
 # for data_name in ['flying3d', 'div2k', 'grass']:
-# for data_name in [ 'div2k']:
-for data_name in ['usaf_sparse']:
+for data_name in [ 'grass']:
+# for data_name in ['usaf_sparse']:
     loader = cond_loader(data_name, channel, image_res, roi_res, virtual_depth_planes)
     final_phase, recon_amp, all_in_focus, mapped_final_phase, paths = {}, {}, {}, {}, {}
-    output_folder = './experiments_holonet_usaf/' + data_name + '/green'
+    output_folder = './experiments_holonet/' + data_name + '/green'
     for path in ['img', 'depth', 'depth_color', 'mask', 'masked_img', 'recon']:
         paths[path] = cond_mkdir(output_folder, path)
         
@@ -175,10 +175,6 @@ for data_name in ['usaf_sparse']:
             break
         
         imgs, masks, depth, imgs_id = imgs_masks_depth_id
-        # imgs = 255-imgs # 反转图片颜色
-        # masks = 1-masks # 反转掩码
-        # sparse scene
-        # imgs, masks = sparse_scene()
         
         if data_name == 'usaf':
             masks = 1 - masks
@@ -188,22 +184,10 @@ for data_name in ['usaf_sparse']:
         print(imgs_id[0])
         sub_name = imgs_id[0].replace('/', '_')
         crop_masks = utils.crop_image(masks, roi_res, stacked_complex=False)
-        
-        # phase generation
-        # final_phase['3d_sgd_asm'] = sgd(imgs, masks, device, forward_prop_without_aperture, roi_res, num_iters=num_iters)
+
         with torch.no_grad():
             for key in holo_path:
                 final_phase[key] = holonet(imgs, masks, device, model_path=holo_path[key])
-            # xiangyu_phase0 = utils.crop_image(torch.tensor(np.array(cv2.imread(f'xiangyu_phase/phase_green_[2]_801.png', cv2.IMREAD_GRAYSCALE))).to(device), image_res, stacked_complex=False).unsqueeze(0).unsqueeze(0)
-            
-            # xiangyu_phase = (2*np.pi * (xiangyu_phase0 / 255.0)) - np.pi
-            # xiangyu_phase = np.pi - (2*np.pi * (xiangyu_phase0 / 255.0))
-            xiangyu_phase = torch.load('xiangyu_phase/phasePTHO/slm_phase_[0].pt')
-            # xiangyu_phase = (2*np.pi * (1 - xiangyu_phase0 / 256.0)) + 2*np.pi - np.pi
-            # iio.imwrite(os.path.join(output_folder, f'{sub_name}_xiangyu_phase.png'), mapped_xiangyu_phase.squeeze(0).detach().cpu().numpy().round().astype(np.uint8))
-            # reconstruction
-            # recon_amp[key + 'with_aperture'] = forward_prop_with_aperture(final_phase['3d_holonet']).abs()
-            # recon_amp[key + 'without_aperture'] = forward_prop_without_aperture(final_phase['3d_holonet']).abs()
             for key in final_phase:
                 if isinstance(final_phase[key], tuple):
                     phase_0, phase_1 = final_phase[key]
@@ -218,26 +202,18 @@ for data_name in ['usaf_sparse']:
                     re_map_phase = (2*np.pi * (1 - mapped_final_phase[key] / 255.0)) - np.pi
                     iio.imwrite(os.path.join(output_folder, f'{sub_name}_{key}_slm_phase.png'), mapped_final_phase[key].squeeze(0).detach().cpu().numpy().round().astype(np.uint8))
             
-            # 归一化
                 recon_amp[key] = (recon_amp[key] - recon_amp[key].min()) / (recon_amp[key].max() - recon_amp[key].min())
 
-            # all in focus
-            # all_in_focus['3d_holonet_with_aperture'] = torch.sum(recon_amp['3d_holonet_with_aperture'] * masks, dim=1)
-            # all_in_focus['3d_holonet_without_aperture'] = torch.sum(recon_amp['3d_holonet_without_aperture'] * masks, dim=1)
                 all_in_focus[key] = torch.sum(recon_amp[key] * crop_masks, dim=1)
             
-            # save phases
-            # for key in final_phase:
-            # save input images 只有1张
+
             cv2.imwrite(os.path.join(paths['img'], f'{sub_name}_image.png'), (imgs.squeeze(0).permute(1, 2, 0).cpu().numpy()*255).astype(np.uint8))
             
-            # save masked images 只有1套
+
             masked_imgs = imgs * masks
             for i in range(len(virtual_depth_planes)):
                 cv2.imwrite(os.path.join(paths['masked_img'], f'{sub_name}_masked_img_{i}.png'), (masked_imgs.squeeze(0)[i].cpu().numpy()*255).astype(np.uint8))
                     
-            # save simulation recon 10套 * 8张
-            # for key in recon_amp:
                 for i in range(len(virtual_depth_planes)):
                     cv2.imwrite(os.path.join(paths['recon'], f'{sub_name}_{key}_recon_{i}.png'), (recon_amp[key].squeeze(0)[i].detach().cpu().numpy()*255).astype(np.uint8))
         

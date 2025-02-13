@@ -24,7 +24,7 @@ opt = p.parse_args()
 opt.channel = 1
 opt.prop_model="cnnpropcnn"
 opt.target="rgbd"
-opt.prop_model_path = 'CNNpropCNN_model/16-2317__green-slm8-32-512_tg5-8-128_rectrect_l1_4pls_bs1/model-epoch=197-PSNR_validation_epoch=40.01.ckpt'
+# opt.prop_model_path = 'open_source_code/16-2317__green-slm8-32-512_tg5-8-128_rectrect_l1_4pls_bs1/model-epoch=197-PSNR_validation_epoch=40.01.ckpt'
 params.set_configs(opt)
 
 def CNNpropCNN_default():

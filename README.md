@@ -3,11 +3,13 @@
 
 Source codes for the Optical Letters paper titled "3D-HoloNet: Fast, unfiltered, 3D hologram generation with camera-calibrated network learning".
 
-[Wenbin Zhou](https://hku.welight.fun/wenbin),
-[Feifan Qu](https://qufeifan.github.io/),
+[Wenbin Zhou](https://hku.welight.fun/wenbin)\*,
+[Feifan Qu](https://qufeifan.github.io/)\*,
 [Xiangyu Meng](https://www.linkedin.com/in/xiangyu-meng-907836302/),
 [Zhenyang Li](https://lagrangeli.github.io/),
 and [Yifan (Evan) Peng](https://www.eee.hku.hk/~evanpeng/)
+
+ \*denotes equal contribution
 
 ## Train the 3D-HoloNet
 

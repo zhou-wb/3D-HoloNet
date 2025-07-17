@@ -16,7 +16,7 @@ Download [FlyingThings3D](https://lmb.informatik.uni-freiburg.de/resources/datas
 
 Set the ```data_path = 'xxx/data/flying3d/'``` in ```train.py``` *Dataset Parameters* section
 
-You may use your own trained forward model *CNNpropCNN* or the ideal propagation model *ASM* for reconstruction. This can be set in the ```train.py``` *Load Networks -- Forward Network* section.
+You may use your own trained forward model *CNNpropCNN* (please refer to [neural-3d-holography](https://github.com/computational-imaging/neural-3d-holography)) or the ideal propagation model *ASM* for reconstruction. This can be set in the ```train.py``` *Load Networks -- Forward Network* section.
 ```
 python train.py
 ```

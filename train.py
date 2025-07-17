@@ -49,7 +49,7 @@ F_aperture = 1
 #######################
 # Training Parameters #
 #######################
-device = torch.device('cuda:0')
+device = torch.device('cuda:1')
 loss_fn = nn.MSELoss().to(device)
 cal_psnr = PeakSignalNoiseRatio().to(device)
 cal_ssim = StructuralSimilarityIndexMeasure().to(device)
@@ -84,7 +84,7 @@ roi_res = (880, 1600)
 random_seed = 10 #random_seed = None for not shuffle
 
 if dataset_name == 'FlyingThings3D':
-    data_path = '/mnt/ssd1/feifan/data/flying3d/'
+    data_path = 'xxx/data/flying3d/'
     train_loader = FlyingThings3D_loader(data_path=data_path,
                                          channel=channel, image_res=image_res, roi_res=roi_res,
                                          virtual_depth_planes=virtual_depth_planes,

@@ -15,55 +15,32 @@ def total_variation_loss(img, weight):
 def dynamic_total_variation_loss(phs, img, weight):
     bs_img, c_img, h_img, w_img = phs.size()
     
-    # 计算水平方向的差值
     tv_h = phs[:, :, 1:, :] - phs[:, :, :-1, :]
-    # 计算垂直方向的差值
     tv_w = phs[:, :, :, 1:] - phs[:, :, :, :-1]
     
-    # 获取对应的像素值作为权重
     weights_h = img[:, :, 1:, :].clone()
     weights_w = img[:, :, :, 1:].clone()
     
-    # 应用权重
     weighted_tv_h = torch.pow(tv_h, 2) * weights_h
     weighted_tv_w = torch.pow(tv_w, 2) * weights_w
     
-    # 计算加权后的总变差
     tv_h_loss = weighted_tv_h.sum()
     tv_w_loss = weighted_tv_w.sum()
     
-    # 归一化
     norm_factor = bs_img * c_img * h_img * w_img
     return weight * (tv_h_loss + tv_w_loss) / norm_factor
 
 
 def calculate_image_entropy(image_tensor):
-    """
-    计算图像的信息熵。
-    
-    Args:
-        image_tensor (torch.Tensor): 输入张量，形状为 (B, C, H, W)，其中 B 是批量大小，
-                                      C 是通道数,H 是高度,W 是宽度。
-    
-    Returns:
-        torch.Tensor: 一个形状为 (B,) 的张量，包含每个图像的信息熵。
-    """
-    # 将图像转换为灰度图
-    if image_tensor.shape[1] == 3:  # 如果图像有三个通道（RGB）
+    if image_tensor.shape[1] == 3: 
         gray_image = torch.mean(image_tensor, dim=1, keepdim=True)
     else:
         gray_image = image_tensor
     
-    # 计算每个灰度级的出现次数
-    # Flatten the tensor and convert it to a one-dimensional histogram
     flat_gray_image = gray_image.reshape(gray_image.size(0), -1)
     histogram_bins = torch.histc(flat_gray_image, bins=256, min=0, max=255)
     
-    # 计算每个灰度级出现的概率
     probabilities = histogram_bins / torch.sum(histogram_bins, dim=0, keepdim=True)
-    
-    # 使用 PyTorch 计算信息熵
-    # 注意这里没有提供 qk 参数，意味着默认与均匀分布比较
     entropy_value = -torch.sum(probabilities * torch.log2(probabilities + 1e-12), dim=0)
     
     return entropy_value

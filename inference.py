@@ -2,7 +2,6 @@ import prop_ideal
 import torch
 import torch.nn as nn
 from load_flying3d import FlyingThings3D_loader
-# from load_hypersim import hypersim_TargetLoader
 from image_loader import TargetLoader
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -10,13 +9,11 @@ import cv2
 import utils
 from algorithm import double_phase, gradient_descent
 from propagation_ASM import propagation_ASM
-# from forward_backward_propagation import threeD_dpac
 from load_CNNpropCNN.load_CNNpropCNN import load_CNNpropCNN
 import numpy as np
 import imageio.v3 as iio
 import os
 from PIL import Image
-from torchinfo import summary
 
 
 #####################
@@ -45,7 +42,9 @@ loss_fn = nn.MSELoss().to(device)
 image_res = (1080, 1920)
 roi_res = (880, 1600)
 
-# propagation
+###############
+# Load Models #
+###############
 forward_ASM = []
 for prop_dist_ in prop_dists_from_wrp:
     forward_ASM.append(prop_ideal.SerialProp(prop_dist_, wavelength, feature_size,
@@ -63,11 +62,15 @@ cnnpropcnn = load_CNNpropCNN().to(device)
 holo_path = {}
 holo_path['frame_1_with_tv'] = '3D-HoloNet_model.pth'
 
+
+#####################
+# Load Testing Data #
+#####################
 def cond_loader(data_name, channel, image_res, roi_res, virtual_depth_planes):
     random_seed = None #random_seed = None for not shuffle
     return_type = 'image_mask_depth_id'
     if data_name == 'flying3d':
-        data_path = '/mnt/ssd1/feifan/data/flying3d/'
+        data_path = 'xxx/data/flying3d/'
         loader = FlyingThings3D_loader(data_path=data_path,
                                        channel=channel, image_res=image_res, roi_res=roi_res,
                                      virtual_depth_planes=virtual_depth_planes,
